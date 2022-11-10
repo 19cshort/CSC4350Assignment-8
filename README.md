@@ -43,3 +43,4 @@ Client side commandline:
   
   should probably add something to not print the last padded on 0 in the case of a message segment being less than 2 bytes long
   should change the code to allow for spaces in the message (this was causing split issues which is why i state to not put spaces in the message)
+  The connection currently gets killed on the client side without the server knowing anything; should add something to disconnect more gracefully
