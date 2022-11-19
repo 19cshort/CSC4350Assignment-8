@@ -5,6 +5,7 @@
 #importing optparse for the commandline parameters
 #importing random for random number generation
 #importing math to use the ciel funciton
+#importing timer to implement a timeout on ack or nack reception
 #for execution i opened an idle and ran the file after I had ran the server
 
 from socket import *
@@ -12,6 +13,8 @@ from optparse import OptionParser
 import sys
 import random
 import math
+from threading import Timer
+import time
 
 #options for command line parameters, do a -h to get the help statements to appear
 parser = OptionParser()
@@ -32,7 +35,15 @@ if options.serverPort == 999999 or options.serverName == '297.456.345.897' or op
     print ("Use the -p portNumber to define the port (where portNumber is the port for the connection)")
     print ("Use the -i serverName to define the name of the server (should be 127.0.0.1)")
     print ("Use the -m message to define the message to be sent (where message is what you wanto to be sent) (do not include spaces)")
-    exit()  
+    exit()
+
+if options.serverPort < 0 or options.serverPort > 65535:
+    print ("You have entered an incorrect port number")
+
+def reSend():
+    wholeSegment = protocol + ' ' + str(length) + ' ' + str(options.serverPort) + ' ' + str(randomNumber) + ' ' + 's' + ' ' + str(seqNum) + ' ' + str(checkSum) + ' ' + chunks[counter-1]
+    clientSocket.sendto(wholeSegment.encode(), (options.serverName, options.serverPort))
+    print("resend called")
 
 clientSocket = socket(AF_INET, SOCK_DGRAM)
 
@@ -70,7 +81,10 @@ counter = 1 #counter at 1 because 1 packet has already been sent
 
 while counter != numberOfPackets:
     #recieving the response from server and splitting items
+    t = Timer(interval=5.0, function=reSend)
+    t.start()
     message, serverAddress = clientSocket.recvfrom(2048)
+    t.cancel()
     message = message.decode()
     print (message)
     protocol, length, destPort, randomNumber, flag, serverSeqNum, checkSum = message.split()
