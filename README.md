@@ -12,7 +12,8 @@ that has the following:
 2-byte checksum
 
 these are all sent before the message and the checksum is calculated by XORing all of the header fields
-and the first two bytes of the data being sent.
+and the first two bytes of the data being sent. A resend function was implemented for resending the previous 
+packet if its time out is reached.
 
 The client will first split the message up into parts no longer than 8 bytes. these chunks of the message will then be sent in the correct order
 using sequence number 0 or 1 and will alternate between the two. The Server will recieve the header along with the message and will then
@@ -20,7 +21,9 @@ compute its own checksum and ensure that the packet was recieved correctly. If t
 with a nack in the SND/ACK/NACK field and the client will retransmit the illrecieved packet. If the packet is recieved correctly, the server will send
 back a header with an ack in the SND/ACK/NACK field. Upon recieveing the ack the client will switch to the other sequence number and move onto 
 the next packet to be sent. This process will continue untill all packets are sent. In order to simulate errors, a method was added to intentionally
-corrupt ~1 in every 10 packets
+corrupt ~1 in every 10 packets sent from the client. There is also corruption implemented on the server side to not send ~1 in every 10 acks/nacks.
+The server will print out the message everytime a new part of the message is recieved and the client will print out how the message is being split
+as well as the acks/nacks that it recieves from the server.
 
 Instructions for executing the program, including command-line flag options
 
@@ -43,4 +46,3 @@ Client side commandline:
   
   should probably add something to not print the last padded on 0 in the case of a message segment being less than 2 bytes long
   should change the code to allow for spaces in the message (this was causing split issues which is why i state to not put spaces in the message)
-  The connection currently gets killed on the client side without the server knowing anything; should add something to disconnect more gracefully
